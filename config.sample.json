@@ -1,0 +1,7 @@
+{
+  "icann.account.username": "username@example.com",
+  "icann.account.password": "Abcdef#12345678",
+  "authentication.base.url": "https://account-api-test.icann.org",
+  "czds.base.url": "https://czds-api-test.icann.org",
+  "working.directory": "/where/zonefiles/will/be/saved"
+}

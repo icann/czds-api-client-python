@@ -1,0 +1,11 @@
+.DS_Store
+.idea/**
+.idea/
+*.iml
+
+config.json
+
+zonefiles/
+zonefiles/**
+
+__*
