@@ -26,7 +26,7 @@ or default to current directory if not specified in `config.json`
 Documentation
 -------------
 
-* CZDS REST API Specs - https://github.com/icann/czds-api-client/blob/master/docs/ICANN_CZDS_api.pdf
+* CZDS REST API Specs - https://github.com/icann/czds-api-client-java/blob/master/docs/ICANN_CZDS_api.pdf
 
 Contributing
 ------------
