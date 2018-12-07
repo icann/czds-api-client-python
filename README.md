@@ -2,9 +2,9 @@ CZDS API Client in Python
 ===========
 
 This repository provides a Python example of how to download zone files via CZDS (Centralized Zone Data Service) REST API. 
-A detail API Specs can be found [here.](https://github.com/icann/czds-api-client/tree/master/docs)
+A detail API Specs can be found [here.](https://github.com/icann/czds-api-client-java/tree/master/docs)
 
-There is also an example provided in Java. It can be found in [this repo.](https://github.com/icann/czds-api-client)
+There is also an example provided in Java. It can be found in [this repo.](https://github.com/icann/czds-api-client-java)
 
 Installation
 ------------
