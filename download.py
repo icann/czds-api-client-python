@@ -147,6 +147,8 @@ def download_zone_files(urls, working_directory):
         download_one_zone(link, output_directory)
 
 # Finally, download all zone files
+start_time = datetime.datetime.now()
 download_zone_files(zone_links, working_directory)
+end_time = datetime.datetime.now()
 
-print("{0}: DONE DONE. Completed downloading all zone files".format(str(datetime.datetime.now())))
+print("{0}: DONE DONE. Completed downloading all zone files. Time spent: {1}".format(str(end_time), (end_time-start_time)))
