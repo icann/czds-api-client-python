@@ -4,7 +4,7 @@ CZDS API Client in Python
 This repository provides a Python example of how to download zone files via CZDS (Centralized Zone Data Service) REST API.
 A detail API Specs can be found [here.](https://github.com/icann/czds-api-client-java/tree/master/docs)
 
-There is also an example provided in Java. It can be found in [this repo.](https://github.com/icann/czds-api-client-java)
+It has been modified to post CloudWatch metrics for each zone file successfully downloaded.
 
 Installation
 ------------
@@ -12,8 +12,8 @@ Installation
 According to ICANN this script requires Python 3, but it works fine with Python 2.7. It has been tested with Python 3.7.1 and 2.7.12.
 
 It requires:
-* The `requests` extension library. Please checkout here to see how to install it - https://github.com/requests/requests
-* The `boto3` library. Please checkout here to see how to install it - https://github.com/requests/requests
+* The `requests` extension library. It can be installed using `pip install requests`.
+* The `boto3` library. This can be installed using `pip install boto3`.
 
 Run
 ---------------------
