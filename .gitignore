@@ -2,6 +2,7 @@
 .idea/**
 .idea/
 *.iml
+*.pyc
 
 config.json
 
