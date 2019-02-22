@@ -24,6 +24,9 @@ username = config['icann.account.username']
 password = config['icann.account.password']
 authen_base_url = config['authentication.base.url']
 czds_base_url = config['czds.base.url']
+use_access_key = config['aws.iam.use_access_key']
+aws_access_key_id = config['aws.iam.access_key_id']
+aws_secret_access_key = config['aws.iam.secret_access_key']
 
 # This is optional. Default to current directory
 working_directory = config['working.directory']
@@ -48,6 +51,18 @@ if not working_directory:
     # Default to current directory
     working_directory = '.'
 
+if not use_access_key:
+    sys.stderr.write("'aws.iam.use_access_key' parameter not found in the config.json file\n")
+    exit(1)
+else:
+    if use_access_key === True:
+        if not aws_access_key_id:
+            sys.stderr.write("'aws.iam.aws_access_key_id' parameter not found in the config.json file\n")
+            exit(1)
+
+        if not aws_access_key_id:
+            sys.stderr.write("'aws.iam.aws_secret_access_key' parameter not found in the config.json file\n")
+            exit(1)
 
 
 ##############################################################################################################
@@ -91,10 +106,14 @@ zone_links = get_zone_links(czds_base_url)
 if not zone_links:
     exit(1)
 
+##############################################################################################################
+# Fourth Step: Set up AWS integration
+##############################################################################################################
 
+# TODO: Pick up here and continue the AWS integration piece.
 
 ##############################################################################################################
-# Fourth Step: download zone files
+# Fifth Step: download zone files
 ##############################################################################################################
 
 # Function definition to download one zone file

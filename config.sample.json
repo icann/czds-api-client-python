@@ -4,6 +4,7 @@
   "authentication.base.url": "https://account-api.icann.org",
   "czds.base.url": "https://czds-api.icann.org",
   "working.directory": "./",
+  "aws.iam.use_access_key": true,
   "aws.iam.access_key_id": "",
   "aws.iam.secret_access_key": ""
 }
