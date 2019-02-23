@@ -1,11 +1,15 @@
-import json
-import sys
+import boto3
 import cgi
-import os
 import datetime
+import json
+import os
+import sys
+import traceback
 
 from do_authentication import authenticate
 from do_http_get import do_get
+
+aws_session_args = {}
 
 ##############################################################################################################
 # First Step: Get the config data from config.json file
@@ -19,13 +23,22 @@ except:
     sys.stderr.write("Error loading config.json file.\n")
     exit(1)
 
+# Front load some of the AWS creds values
+aws_profile           = None
+aws_access_key_id     = None
+aws_secret_access_key = None
+
 # The config.json file must contain the following data:
-username = config['icann.account.username']
-password = config['icann.account.password']
-authen_base_url = config['authentication.base.url']
-czds_base_url = config['czds.base.url']
-use_access_key = config['aws.iam.use_access_key']
-aws_access_key_id = config['aws.iam.access_key_id']
+username              = config['icann.account.username']
+password              = config['icann.account.password']
+authen_base_url       = config['authentication.base.url']
+czds_base_url         = config['czds.base.url']
+aws_region            = config['aws.region']
+aws_cw_ns             = config['aws.cloudwatch.namespace']
+
+# The config.json can contain the following data:
+aws_profile           = config['aws.iam.profile']
+aws_access_key_id     = config['aws.iam.access_key_id']
 aws_secret_access_key = config['aws.iam.secret_access_key']
 
 # This is optional. Default to current directory
@@ -47,22 +60,33 @@ if not czds_base_url:
     sys.stderr.write("'czds.base.url' parameter not found in the config.json file\n")
     exit(1)
 
+if not aws_region:
+    sys.stderr.write("'aws.aws_region' parameter not found in the config.json file\n")
+    exit(1)
+
+if not aws_cw_ns:
+    sys.stderr.write("'aws.cloudwatch.namespace' parameter not found in the config.json file\n")
+    exit(1)
+
 if not working_directory:
     # Default to current directory
     working_directory = '.'
 
-if not use_access_key:
-    sys.stderr.write("'aws.iam.use_access_key' parameter not found in the config.json file\n")
+if (aws_access_key_id === None) ^ (aws_secret_access_key === None):
+    sys.stderr.write("'aws.iam.aws_access_key_id' and 'aws.iam.aws_secret_access_key' parameters must both be used together in config.json file\n")
     exit(1)
-else:
-    if use_access_key === True:
-        if not aws_access_key_id:
-            sys.stderr.write("'aws.iam.aws_access_key_id' parameter not found in the config.json file\n")
-            exit(1)
 
-        if not aws_access_key_id:
-            sys.stderr.write("'aws.iam.aws_secret_access_key' parameter not found in the config.json file\n")
-            exit(1)
+
+# Actually set up AWs creds if we're using keys or a profile. Otherwise we'll just
+# hope we're running on a host/container with an instance profile.
+if aws_access_key_id !== None:
+    aws_session.update({
+        'aws_access_key_id': aws_access_key_id,
+        'aws_secret_access_key': aws_secret_access_key
+    })
+
+if aws_profile !== None:
+    aws_session.update({'profile_name': aws_profile})
 
 
 ##############################################################################################################
@@ -110,7 +134,8 @@ if not zone_links:
 # Fourth Step: Set up AWS integration
 ##############################################################################################################
 
-# TODO: Pick up here and continue the AWS integration piece.
+boto3.setup_default_session(**aws_session_args)
+aws_cw = boto3.client('cloudwatch')
 
 ##############################################################################################################
 # Fifth Step: download zone files
@@ -121,36 +146,45 @@ def download_one_zone(url, output_directory):
     print("{0}: Downloading zone file from {1}".format(str(datetime.datetime.now()), url))
 
     global  access_token
-    download_zone_response = do_get(url, access_token)
 
-    status_code = download_zone_response.status_code
+    try:
+        download_zone_response = do_get(url, access_token)
 
-    if status_code == 200:
-        # Try to get the filename from the header
-        _,option = cgi.parse_header(download_zone_response.headers['content-disposition'])
-        filename = option['filename']
+        status_code = download_zone_response.status_code
 
-        # If could get a filename from the header, then makeup one like [tld].txt.gz
-        if not filename:
-            filename = url.rsplit('/', 1)[-1].rsplit('.')[-2] + '.txt.gz'
+        if status_code == 200:
+            # Try to get the filename from the header
+            _,option = cgi.parse_header(download_zone_response.headers['content-disposition'])
+            filename = option['filename']
 
-        # This is where the zone file will be saved
-        path = '{0}/{1}'.format(output_directory, filename)
+            # If could get a filename from the header, then makeup one like [tld].txt.gz
+            if not filename:
+                filename = url.rsplit('/', 1)[-1].rsplit('.')[-2] + '.txt.gz'
 
-        with open(path, 'wb') as f:
-            for chunk in download_zone_response.iter_content(1024):
-                f.write(chunk)
+            # This is where the zone file will be saved
+            path = '{0}/{1}'.format(output_directory, filename)
 
-        print("{0}: Completed downloading zone to file {1}".format(str(datetime.datetime.now()), path))
+            with open(path, 'wb') as f:
+                for chunk in download_zone_response.iter_content(1024):
+                    f.write(chunk)
 
-    elif status_code == 401:
-        print("The access_token has been expired. Re-authenticate user {0}".format(username))
-        access_token = authenticate(username, password, authen_base_url)
-        download_one_zone(url, output_directory)
-    elif status_code == 404:
-        print("No zone file found for {0}".format(url))
-    else:
-        sys.stderr.write('Failed to download zone from {0} with code {1}\n'.format(url, status_code))
+            print("{0}: Completed downloading zone to file {1}".format(str(datetime.datetime.now()), path))
+
+        elif status_code == 401:
+            print("The access_token has been expired. Re-authenticate user {0}".format(username))
+            access_token = authenticate(username, password, authen_base_url)
+            download_one_zone(url, output_directory)
+        elif status_code == 404:
+            print("No zone file found for {0}".format(url))
+        else:
+            sys.stderr.write('Failed to download zone from {0} with code {1}\n'.format(url, status_code))
+
+        # Make sure we throw an exception we can catch back down the line.
+        if status_code >= 400:
+            raise RuntimeError("Download failed.")
+    except:
+        # Don't just die here. We need to know that we failed.
+        raise
 
 # Function definition for downloading all the zone files
 def download_zone_files(urls, working_directory):
@@ -163,7 +197,32 @@ def download_zone_files(urls, working_directory):
 
     # Download the zone files one by one
     for link in urls:
-        download_one_zone(link, output_directory)
+        cloudwatch_metric = 1
+
+        try:
+            # Taken from above download_one_zone().
+            filename = url.rsplit('/', 1)[-1].rsplit('.')[-2]
+
+            # This is where the zone file will be saved
+            download_one_zone(link, output_directory)
+
+        except:
+            cloudwatch_metric = 0
+            print("Exception downloading file:\n %s" %traceback.format_exc()))
+
+        finally:
+            check_dimensions = {
+                "File": filename
+            }
+
+            check_results = {
+                "MetricName": 'status',
+                "Value": cloudwatch_value,
+                "Dimensions": check_dimsensions,
+                "Timestamp": datetime.datetime.utcnow()
+            }
+            aws_cloudwatch.put_metric(Namespace=aws_cw_ns, MetricData=check_results)
+
 
 # Finally, download all zone files
 start_time = datetime.datetime.now()
