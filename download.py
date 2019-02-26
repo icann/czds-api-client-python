@@ -218,7 +218,7 @@ def download_zone_files(urls, working_directory):
             check_results = {
                 "MetricName": 'status',
                 "Value": cloudwatch_value,
-                "Dimensions": check_dimsensions,
+                "Dimensions": check_dimensions,
                 "Timestamp": datetime.datetime.utcnow()
             }
             aws_cloudwatch.put_metric(Namespace=aws_cw_ns, MetricData=check_results)
