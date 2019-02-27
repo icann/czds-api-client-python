@@ -208,7 +208,7 @@ def download_zone_files(urls, working_directory):
 
         except:
             cloudwatch_metric = 0
-            print("Exception downloading file:\n %s" %traceback.format_exc()))
+            print("Exception downloading file:\n %s" %traceback.format_exc())
 
         finally:
             check_dimensions = {
