@@ -79,13 +79,13 @@ if (aws_access_key_id == None) ^ (aws_secret_access_key == None):
 
 # Actually set up AWs creds if we're using keys or a profile. Otherwise we'll just
 # hope we're running on a host/container with an instance profile.
-if aws_access_key_id !== None:
+if aws_access_key_id != None:
     aws_session.update({
         'aws_access_key_id': aws_access_key_id,
         'aws_secret_access_key': aws_secret_access_key
     })
 
-if aws_profile !== None:
+if aws_profile != None:
     aws_session.update({'profile_name': aws_profile})
 
 
