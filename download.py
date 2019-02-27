@@ -135,7 +135,7 @@ if not zone_links:
 ##############################################################################################################
 
 boto3.setup_default_session(**aws_session_args)
-aws_cw = boto3.client('cloudwatch')
+aws_cloudwatch = boto3.client('cloudwatch')
 
 ##############################################################################################################
 # Fifth Step: download zone files
