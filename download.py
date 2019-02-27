@@ -212,7 +212,8 @@ def download_zone_files(urls, working_directory):
 
         finally:
             check_dimensions = {
-                "File": filename
+                "File": filename,
+                "Source": "ICANN"
             }
 
             check_results = {
