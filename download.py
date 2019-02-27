@@ -72,7 +72,7 @@ if not working_directory:
     # Default to current directory
     working_directory = '.'
 
-if (aws_access_key_id === None) ^ (aws_secret_access_key === None):
+if (aws_access_key_id == None) ^ (aws_secret_access_key == None):
     sys.stderr.write("'aws.iam.aws_access_key_id' and 'aws.iam.aws_secret_access_key' parameters must both be used together in config.json file\n")
     exit(1)
 
