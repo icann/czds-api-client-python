@@ -202,7 +202,7 @@ def download_zone_files(urls, working_directory):
 
         try:
             # Taken from above download_one_zone().
-            filename = url.rsplit('/', 1)[-1].rsplit('.')[-2]
+            filename = link.rsplit('/', 1)[-1].rsplit('.')[-2]
 
             # This is where the zone file will be saved
             download_one_zone(link, output_directory)
