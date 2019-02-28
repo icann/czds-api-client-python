@@ -209,7 +209,7 @@ def download_zone_files(urls, working_directory):
             filename = link.rsplit('/', 1)[-1].rsplit('.')[-2]
 
             # This is where the zone file will be saved
-            #download_one_zone(link, output_directory)
+            download_one_zone(link, output_directory)
 
         except:
             # Failure happened.
