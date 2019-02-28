@@ -16,7 +16,9 @@ aws_session_args = {}
 ##############################################################################################################
 
 try:
-    config_file = open("config.json", "r")
+    # In case we run the script from somewhere outside our working directory...
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    config_file = open(base_path + "/config.json", "r")
     config = json.load(config_file)
     config_file.close()
 except:
