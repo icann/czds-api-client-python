@@ -190,6 +190,9 @@ def download_one_zone(url, output_directory):
 # Function definition for downloading all the zone files
 def download_zone_files(urls, working_directory):
 
+    # Set up a list to store our CloudWatch metrics.
+    cloudwatch_metrics = []
+
     # The zone files will be saved in a sub-directory
     output_directory = working_directory + "/zonefiles"
 
@@ -198,32 +201,41 @@ def download_zone_files(urls, working_directory):
 
     # Download the zone files one by one
     for link in urls:
-        cloudwatch_metric = 1
+        # Start with success.
+        cloudwatch_metric_value = 1
 
         try:
             # Taken from above download_one_zone().
             filename = link.rsplit('/', 1)[-1].rsplit('.')[-2]
 
             # This is where the zone file will be saved
-            download_one_zone(link, output_directory)
+            #download_one_zone(link, output_directory)
 
         except:
-            cloudwatch_metric = 0
+            # Failure happened.
+            cloudwatch_metric_value = 0
             print("Exception downloading file:\n %s" %traceback.format_exc())
 
         finally:
-            check_dimensions = {
-                "File": filename,
-                "Source": "ICANN"
-            }
-
-            check_results = {
+            # Add the results to our list of results.
+            cloudwatch_metrics.append({
                 "MetricName": 'status',
-                "Value": cloudwatch_value,
-                "Dimensions": check_dimensions,
+                "Value": cloudwatch_metric_value,
+                "Dimensions": [
+                    {
+                        "Name": "File",
+                        "Value": filename
+                    },
+                    {
+                        "Name": "Source",
+                        "Value": "ICANN"
+                    }
+                ],
                 "Timestamp": datetime.datetime.utcnow()
-            }
-            aws_cloudwatch.put_metric(Namespace=aws_cw_ns, MetricData=check_results)
+            })
+
+    # Put all our metrics in one shot.
+    aws_cloudwatch.put_metric_data(Namespace=aws_cw_ns, MetricData=cloudwatch_metrics)
 
 
 # Finally, download all zone files
