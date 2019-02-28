@@ -100,7 +100,6 @@ print("Authenticate user {0}".format(username))
 access_token = authenticate(username, password, authen_base_url)
 
 
-
 ##############################################################################################################
 # Third Step: Get the download zone file links
 ##############################################################################################################
@@ -137,7 +136,7 @@ if not zone_links:
 ##############################################################################################################
 
 boto3.setup_default_session(**aws_session_args)
-aws_cloudwatch = boto3.client('cloudwatch')
+aws_cloudwatch = boto3.client('cloudwatch', region_name=aws_region)
 
 ##############################################################################################################
 # Fifth Step: download zone files
