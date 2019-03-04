@@ -20,10 +20,10 @@ AWS authentication
 
 This utility supports authenticating with AWS in the following ways:
 * AWS instance profiles
-* AWS profiles defined in ~/.aws/creentials
+* AWS profiles defined in ~/.aws/credentials
 * AWS IAM keys
 
-AWS authentication parameters are configured in `config.yml`. In order to use an instace profile ensure that `aws.iam.profile`, `aws.iam.access_key_id`, and `aws.iam.secret_access_key` are set to `null`. If you want to specify an instance profile just set `aws.iam.profile` to the name of the desired AWS profile you want to use. `aws.iam.access_key_id` and `aws.iam.secret_access_key` should be set to `null` and will be ignored in favor of the AWS authentication profile if specified. In order to use AWS access keys `aws.iam.profile` should be set to `null`.
+AWS authentication parameters are configured in `config.yml`. In order to use an instance profile ensure that `aws.iam.profile`, `aws.iam.access_key_id`, and `aws.iam.secret_access_key` are set to `null`. If you want to specify an instance profile just set `aws.iam.profile` to the name of the desired AWS profile you want to use. `aws.iam.access_key_id` and `aws.iam.secret_access_key` should be set to `null` and will be ignored in favor of the AWS authentication profile if specified. In order to use AWS access keys `aws.iam.profile` should be set to `null`.
 
 CloudWatch metrics
 ------------------
