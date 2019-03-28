@@ -12,9 +12,13 @@ from do_http_get import do_get
 ##############################################################################################################
 
 try:
-    config_file = open("config.json", "r")
-    config = json.load(config_file)
-    config_file.close()
+    if 'CZDS_CONFIG' in os.environ:
+        config_data = os.environ['CZDS_CONFIG']
+        config = json.loads(config_data)
+    else:
+        config_file = open("config.json", "r")
+        config = json.load(config_file)
+        config_file.close()
 except:
     sys.stderr.write("Error loading config.json file.\n")
     exit(1)
