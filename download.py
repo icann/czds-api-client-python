@@ -26,7 +26,7 @@ authen_base_url = config['authentication.base.url']
 czds_base_url = config['czds.base.url']
 
 # This is optional. Default to current directory
-working_directory = config['working.directory']
+working_directory = config.get('working.directory', '.') # Default to current directory
 
 if not username:
     sys.stderr.write("'icann.account.username' parameter not found in the config.json file\n")
@@ -43,10 +43,6 @@ if not authen_base_url:
 if not czds_base_url:
     sys.stderr.write("'czds.base.url' parameter not found in the config.json file\n")
     exit(1)
-
-if not working_directory:
-    # Default to current directory
-    working_directory = '.'
 
 
 
