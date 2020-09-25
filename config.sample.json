@@ -3,5 +3,6 @@
   "icann.account.password": "Abcdef#12345678",
   "authentication.base.url": "https://account-api.icann.org",
   "czds.base.url": "https://czds-api.icann.org",
-  "working.directory": "/where/zonefiles/will/be/saved"
+  "working.directory": "/where/zonefiles/will/be/saved",
+  "tlds": []
 }
