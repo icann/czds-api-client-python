@@ -160,7 +160,7 @@ def download_one_zone(url, output_directory):
         if status_code == 200:
             # Try to get the filename from the header
             _,option = cgi.parse_header(download_zone_response.headers['content-disposition'])
-            filename = option['filename']
+            filename = option.get('filename')
 
             # If could get a filename from the header, then makeup one like [tld].txt.gz
             if not filename:
