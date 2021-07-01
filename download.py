@@ -91,7 +91,27 @@ zone_links = get_zone_links(czds_base_url)
 if not zone_links:
     exit(1)
 
+# We may not want to download all the zone files, for a poor connection this will take a long time.
+# So, enable the user to specify which files to download at the command line. They just need to add
+# the TLD of all those that they wish to download, i.e. `python3 download.py net com org` to download
+# the .net, .com, and .org zone files. The zone files downloaded will be a subset of those available
+# and those specified.
 
+# Zones to download are those passed by name
+zones_to_download = sys.argv[1:]
+
+if any([zone == "*" for zone in zones_to_download]):
+    # If any are a *, then just download all
+    pass
+else:
+    # Append .zone to each to make it easier to search
+    zones_to_download = [f"{zone.lower()}.zone" for zone in zones_to_download]
+    zone_links = [zone for zone in zone_links if any([zone.endswith(z) for z in zones_to_download])]
+    if len(zone_links) != len(zones_to_download):
+        # We get here if either we don't have permission to download zones we wanted, or they don't exist
+        not_found = [zone for zone in zones_to_download if not any([z.endswith(zone) for z in zone_links])]
+        print(zone_links, zones_to_download)
+        print("The following zones could not be downloaded because they either do not exist or you do not have permission:\n\t{0}".format('\n\t'.join(not_found)))
 
 ##############################################################################################################
 # Fourth Step: download zone files
