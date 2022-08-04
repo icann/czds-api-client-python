@@ -1,11 +1,10 @@
 import json
 import sys
-import cgi
 import os
 import datetime
 
 from do_authentication import authenticate
-from do_request import do_get
+from do_request import do_post
 
 ##############################################################################################################
 # First Step: Get the config data from config.json file
@@ -61,95 +60,70 @@ if access_token:
 
 
 ##############################################################################################################
-# Third Step: Get the download zone file links
+# Third Step: Get the list of expiring zones
 ##############################################################################################################
-
-# Function definition for listing the zone links
-def get_zone_links(czds_base_url):
+def get_zone_ids(czds_base_url):
     global access_token
 
-    links_url = czds_base_url + "/czds/downloads/links"
-    links_response = do_get(links_url, access_token)
+    links_url = czds_base_url + "/czds/requests/all"
+    pagination = {"size": 1200, "page": 0}
+    sort = {"field": "expired", "direction": "asc"}
+    data = {"status": "Approved", "filter": None, "pagination": pagination, "sort": sort}
+    links_response = do_post(links_url, access_token, data)
 
     status_code = links_response.status_code
 
     if status_code == 200:
-        zone_links = links_response.json()
-        print("{0}: The number of zone files to be downloaded is {1}".format(datetime.datetime.now(), len(zone_links)))
-        return zone_links
+        zone_details = links_response.json()
+        zone_ids = []
+        current_date = datetime.datetime.today()
+        for zone in zone_details["requests"]:
+            expired = datetime.datetime.strptime(zone["expired"], '%Y-%m-%dT%H:%M:%SZ')
+            if abs(expired-current_date).days < 30:
+                zone_ids.append(zone["requestId"])
+        print("{0}: The number of zone files to request expiry extension is {1}".format(datetime.datetime.now(), len(zone_ids)))
+        return zone_ids
     elif status_code == 401:
         print("The access_token has been expired. Re-authenticate user {0}".format(username))
         access_token = authenticate(username, password, authen_base_url)
-        get_zone_links(czds_base_url)
+        get_zone_ids(czds_base_url)
     else:
-        sys.stderr.write("Failed to get zone links from {0} with error code {1}\n".format(links_url, status_code))
+        sys.stderr.write("Failed to get zone ids from {0} with error code {1}\n".format(links_url, status_code))
         return None
 
 
 # Get the zone links
-zone_links = get_zone_links(czds_base_url)
-if not zone_links:
+zone_ids = get_zone_ids(czds_base_url)
+if not zone_ids:
     exit(1)
 
 
 ##############################################################################################################
-# Fourth Step: download zone files
+# Fourth Step: Request extensions on zone file expiry
 ##############################################################################################################
-
-# Function definition to download one zone file
-def download_one_zone(url, output_directory):
-    print("{0}: Downloading zone file from {1}".format(str(datetime.datetime.now()), url))
-
+def request_extension(zone_ids):
     global access_token
-    download_zone_response = do_get(url, access_token)
 
-    status_code = download_zone_response.status_code
+    for zone_id in zone_ids:
+        links_url = czds_base_url + f"/czds/requests/extension/{zone_id}"
+        links_response = do_post(links_url, access_token)
 
-    if status_code == 200:
-        # Try to get the filename from the header
-        _, option = cgi.parse_header(download_zone_response.headers['content-disposition'])
-        filename = option.get('filename')
+        status_code = links_response.status_code
 
-        # If could get a filename from the header, then makeup one like [tld].txt.gz
-        if not filename:
-            filename = url.rsplit('/', 1)[-1].rsplit('.')[-2] + '.txt.gz'
-
-        # This is where the zone file will be saved
-        path = '{0}/{1}'.format(output_directory, filename)
-
-        with open(path, 'wb') as f:
-            for chunk in download_zone_response.iter_content(1024):
-                f.write(chunk)
-
-        print("{0}: Completed downloading zone to file {1}".format(str(datetime.datetime.now()), path))
-
-    elif status_code == 401:
-        print("The access_token has been expired. Re-authenticate user {0}".format(username))
-        access_token = authenticate(username, password, authen_base_url)
-        download_one_zone(url, output_directory)
-    elif status_code == 404:
-        print("No zone file found for {0}".format(url))
-    else:
-        sys.stderr.write('Failed to download zone from {0} with code {1}\n'.format(url, status_code))
+        if status_code == 200:
+            zone_ids.remove(zone_id)  # don't request again if got 401 while running this
+            print("Request for extension successful.")
+        elif status_code == 401:
+            print("The access_token has been expired. Re-authenticate user {0}".format(username))
+            access_token = authenticate(username, password, authen_base_url)
+            request_extension(zone_ids)
+        else:
+            sys.stderr.write('Failed to request extension from {0} with code {1}\n'.format(links_url, status_code))
 
 
-# Function definition for downloading all the zone files
-def download_zone_files(urls, working_directory):
-
-    # The zone files will be saved in a sub-directory
-    output_directory = working_directory + "/zonefiles"
-
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-    # Download the zone files one by one
-    for link in urls:
-        download_one_zone(link, output_directory)
-
-
-# Finally, download all zone files
+# Finally, request extension for all zone files
 start_time = datetime.datetime.now()
-download_zone_files(zone_links, working_directory)
+request_extension(zone_ids)
 end_time = datetime.datetime.now()
 
-print("{0}: DONE DONE. Completed downloading all zone files. Time spent: {1}".format(str(end_time), (end_time-start_time)))
+print("{0}: DONE DONE. Completed requesting extension for all expiring zone files. Time spent: {1}".format(str(end_time), (end_time-start_time)))
