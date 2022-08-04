@@ -3,6 +3,7 @@ import requests
 import sys
 import datetime
 
+
 def authenticate(username, password, authen_base_url):
     authen_headers = {'Content-Type': 'application/json',
                       'Accept': 'application/json'}
@@ -21,6 +22,16 @@ def authenticate(username, password, authen_base_url):
         access_token = response.json()['accessToken']
         print('{0}: Received access_token:'.format(datetime.datetime.now()))
         print(access_token)
+        try:
+            config_file = open("config.json", "r")
+            config = json.load(config_file)
+            config_file.close()
+            config['czds.bearer.token'] = access_token
+            config_file = open("config.json", "w")
+            json.dump(config, config_file, indent=4)
+            config_file.close()
+        except:
+            sys.stderr.write("Error loading config.json file.\n")
         return access_token
     elif status_code == 404:
         sys.stderr.write("Invalid url " + authen_url)
