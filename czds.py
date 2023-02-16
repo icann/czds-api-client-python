@@ -91,6 +91,7 @@ def main():
     if not args.username:
         print('No credentials defined!')
         parser.print_help()
+        return
     try:
         print('Starting Zonefile Downloads')
         czds_client = CZDSClient(args.username, args.password)
