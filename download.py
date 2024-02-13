@@ -3,9 +3,12 @@ import sys
 import cgi
 import os
 import datetime
+from multiprocessing.pool import ThreadPool
 
 from do_authentication import authenticate
 from do_http_get import do_get
+
+MAX_THREADS = 6
 
 ##############################################################################################################
 # First Step: Get the config data from config.json file
@@ -142,9 +145,8 @@ def download_zone_files(urls, working_directory):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    # Download the zone files one by one
-    for link in urls:
-        download_one_zone(link, output_directory)
+    pool = ThreadPool(MAX_THREADS)
+    pool.map(lambda link: download_one_zone(link, output_directory), urls)
 
 # Finally, download all zone files
 start_time = datetime.datetime.now()
