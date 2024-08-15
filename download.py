@@ -23,29 +23,29 @@ except:
     sys.stderr.write("Error loading config.json file.\n")
     exit(1)
 
-# The config.json file must contain the following data:
-username = config['icann.account.username']
-password = config['icann.account.password']
-authen_base_url = config['authentication.base.url']
-czds_base_url = config['czds.base.url']
+# The config.json file or environment variables must contain the following data
+username = os.getenv('ICANN_ACCOUNT_USERNAME', config.get('icann.account.username'))
+password = os.getenv('ICANN_ACCOUNT_PASSWORD', config.get('icann.account.password'))
+authen_base_url = os.getenv('ICANN_AUTHEN_BASE_URL', config.get('authentication.base.url'))
+czds_base_url = os.getenv('ICANN_CZDS_BASE_URL', config.get('czds.base.url'))
 
 # This is optional. Default to current directory
 working_directory = config.get('working.directory', '.') # Default to current directory
 
 if not username:
-    sys.stderr.write("'icann.account.username' parameter not found in the config.json file\n")
+    sys.stderr.write("'icann.account.username' parameter not found in environment variables or config.json file\n")
     exit(1)
 
 if not password:
-    sys.stderr.write("'icann.account.password' parameter not found in the config.json file\n")
+    sys.stderr.write("'icann.account.password' parameter not found in environment variables or config.json file\n")
     exit(1)
 
 if not authen_base_url:
-    sys.stderr.write("'authentication.base.url' parameter not found in the config.json file\n")
+    sys.stderr.write("'authentication.base.url' parameter not found in environment variables or config.json file\n")
     exit(1)
 
 if not czds_base_url:
-    sys.stderr.write("'czds.base.url' parameter not found in the config.json file\n")
+    sys.stderr.write("'czds.base.url' parameter not found in environment variables or config.json file\n")
     exit(1)
 
 
@@ -75,7 +75,7 @@ def get_zone_links(czds_base_url):
 
     if status_code == 200:
         zone_links = links_response.json()
-        print("{0}: The number of zone files to be downloaded is {1}".format(datetime.datetime.now(),len(zone_links)))
+        print("{0}: The number of zone files to be downloaded is {1}".format(datetime.datetime.now(), len(zone_links)))
         return zone_links
     elif status_code == 401:
         print("The access_token has been expired. Re-authenticate user {0}".format(username))
@@ -108,7 +108,7 @@ def download_one_zone(url, output_directory):
 
     if status_code == 200:
         # Try to get the filename from the header
-        _,option = cgi.parse_header(download_zone_response.headers['content-disposition'])
+        _, option = cgi.parse_header(download_zone_response.headers['content-disposition'])
         filename = option.get('filename')
 
         # If could get a filename from the header, then makeup one like [tld].txt.gz
