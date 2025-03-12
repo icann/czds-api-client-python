@@ -3,8 +3,8 @@ import gzip
 import shutil
 
 # Define source and destination directories
-source_dir = "/zones/zonefiles/"
-destination_dir = "/zones/extracted_zonefiles/"
+source_dir = "zones/zonefiles/"
+destination_dir = "zones/extracted_zonefiles/"
 
 # Ensure destination directory exists
 os.makedirs(destination_dir, exist_ok=True)
