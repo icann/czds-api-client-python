@@ -3,6 +3,7 @@ import requests
 import sys
 import datetime
 import time
+import urllib.parse
 
 def authenticate(username, password, authen_base_url, retry_attempts=3):
     """Authenticate with ICANN CZDS API and return an access token."""
@@ -10,12 +11,13 @@ def authenticate(username, password, authen_base_url, retry_attempts=3):
     authen_headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'User-Agent': 'CZDS-Client/1.0 (GitHub Actions)'  # Ensure proper User-Agent format
+        'User-Agent': 'Mozilla/5.0 (compatible; CZDS-Client/1.0; +https://github.com/mthcht/czds-api-client-python)'
     }
 
     credential = {
         "username": username,
-        "password": password
+        "password": password,  # No encoding for now, unless ICANN blocks special characters
+        "grant_type": "password"  # Some APIs require this
     }
 
     authen_url = authen_base_url + '/api/authenticate'
@@ -38,7 +40,7 @@ def authenticate(username, password, authen_base_url, retry_attempts=3):
                 sys.stderr.write(f"Request Body: {json.dumps(credential, indent=2)}\n")
                 sys.stderr.write(f"Response Headers: {json.dumps(dict(response.headers), indent=2)}\n")
                 sys.stderr.write(f"Response Body: {response_text}\n")
-                sys.stderr.write("\n🚨 Possible causes: Invalid request format, missing fields, or ICANN API changes.\n")
+                sys.stderr.write("\n🚨 Possible causes: Invalid request format, missing fields, ICANN API changes, or IP blocking.\n")
                 exit(1)
 
             elif status_code == 401:
