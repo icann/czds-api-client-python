@@ -23,6 +23,9 @@ Run
 All the zone files will be saved in `working-directory`/zonefiles, `working-directory` is specified in `config.json`, 
 or default to current directory if not specified in `config.json`
 
+By default, it will download all the APPOVED zone files. If you only want a subset of the zone files, specify the
+`tlds: []` in the `config.json`. Note: missing `tlds` or empty `[]` means downloadd all the APPROVED zone files.
+
 Documentation
 -------------
 
