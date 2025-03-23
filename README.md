@@ -9,7 +9,7 @@ There is also an example provided in Java. It can be found in [this repo.](https
 Installation
 ------------
 
-This script requires Python 3. It has been tested with Python 3.7.1. 
+This script requires Python 3. It has been tested with Python 3.13.2
 
 It requires the `requests` extension library. Please checkout here to see how to install it - https://github.com/requests/requests
 
