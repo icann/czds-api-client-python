@@ -4,5 +4,6 @@
   "authentication.base.url": "https://account-api.icann.org",
   "czds.base.url": "https://czds-api.icann.org",
   "working.directory": "/where/zonefiles/will/be/saved",
+  "_comment": "Optional tlds: to specify a subset of tlds to download. Missing or empty [] means downloading all APPROVED tlds.",
   "tlds": []
 }
