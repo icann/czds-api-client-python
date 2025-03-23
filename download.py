@@ -1,9 +1,8 @@
 import json
 import sys
-import cgi
 import os
 import datetime
-
+from email.message import Message
 from do_authentication import authenticate
 from do_http_get import do_get
 
@@ -97,6 +96,11 @@ if not zone_links:
 # Fourth Step: download zone files
 ##############################################################################################################
 
+def _parse_header(header):
+    m = Message()
+    m['content-type'] = header
+    return m
+
 # Function definition to download one zone file
 def download_one_zone(url, output_directory):
     print("{0}: Downloading zone file from {1}".format(str(datetime.datetime.now()), url))
@@ -108,8 +112,8 @@ def download_one_zone(url, output_directory):
 
     if status_code == 200:
         # Try to get the filename from the header
-        _,option = cgi.parse_header(download_zone_response.headers['content-disposition'])
-        filename = option.get('filename')
+        option = _parse_header(download_zone_response.headers['content-disposition'])
+        filename = option.get_param('filename')
 
         # If could get a filename from the header, then makeup one like [tld].txt.gz
         if not filename:
