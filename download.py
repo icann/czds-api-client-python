@@ -18,8 +18,8 @@ try:
         config_file = open("config.json", "r")
         config = json.load(config_file)
         config_file.close()
-except:
-    sys.stderr.write("Error loading config.json file.\n")
+except Exception as e:
+    sys.stderr.write("Error loading config.json file: %s\n" % str(e))
     exit(1)
 
 # The config.json file must contain the following data:
