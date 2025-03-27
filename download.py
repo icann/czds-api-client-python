@@ -1,6 +1,7 @@
 import json
 import sys
 import os
+import os.path
 import datetime
 from email.message import Message
 from do_authentication import authenticate
@@ -18,8 +19,8 @@ try:
         config_file = open("config.json", "r")
         config = json.load(config_file)
         config_file.close()
-except Exception as e:
-    sys.stderr.write("Error loading config.json file: %s\n" % str(e))
+except:
+    sys.stderr.write("Error loading config.json file.\n")
     exit(1)
 
 # The config.json file must contain the following data:
@@ -122,9 +123,10 @@ def download_one_zone(url, output_directory):
         # This is where the zone file will be saved
         path = '{0}/{1}'.format(output_directory, filename)
 
-        with open(path, 'wb') as f:
-            for chunk in download_zone_response.iter_content(1024):
-                f.write(chunk)
+        if not os.path.isfile(path):
+            with open(path, 'wb') as f:
+                for chunk in download_zone_response.iter_content(1024):
+                    f.write(chunk)
 
         print("{0}: Completed downloading zone to file {1}".format(str(datetime.datetime.now()), path))
 
